@@ -55,8 +55,9 @@ export async function GET(request: Request) {
           return NextResponse.redirect(`${origin}/auth?error=${encodeURIComponent('Failed to create profile. Please try again.')}`)
         }
       } else {
-        // User already exists, just log them in
-        return NextResponse.redirect(`${origin}/auth?error=${encodeURIComponent('Account already exists. Please log in instead.')}`)
+        // User already exists - sign them out and tell them to log in
+        await supabase.auth.signOut()
+        return NextResponse.redirect(`${origin}/auth?error=${encodeURIComponent('Account already exists with this email. Please log in instead.')}`)
       }
 
       return NextResponse.redirect(`${origin}${next}`)
