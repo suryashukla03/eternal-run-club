@@ -6,6 +6,7 @@ export async function GET(request: Request) {
   const code = searchParams.get('code')
   const team = searchParams.get('team') || 'Alpha'
   const username = searchParams.get('username')
+  const mode = searchParams.get('mode') || 'login'
   const next = searchParams.get('next') ?? '/dashboard'
 
   if (code) {
@@ -22,9 +23,18 @@ export async function GET(request: Request) {
         .eq('id', user.id)
         .single()
 
-      // If no profile exists, create one
+      if (mode === 'login') {
+        // Login mode - user must have an existing profile
+        if (!existingProfile) {
+          // Sign out the user since they don't have a profile
+          await supabase.auth.signOut()
+          return NextResponse.redirect(`${origin}/auth?error=${encodeURIComponent('No account found. Please sign up first.')}`)
+        }
+        return NextResponse.redirect(`${origin}${next}`)
+      }
+
+      // Signup mode - create profile if it doesn't exist
       if (!existingProfile) {
-        // For Google OAuth, use username from URL params or derive from email/name
         const finalUsername = username || 
           user.user_metadata?.full_name?.replace(/\s+/g, '_').toLowerCase() ||
           user.email?.split('@')[0] || 
@@ -41,9 +51,12 @@ export async function GET(request: Request) {
 
         if (profileError) {
           console.error('Error creating user profile:', profileError)
-          // Redirect to auth with error
+          await supabase.auth.signOut()
           return NextResponse.redirect(`${origin}/auth?error=${encodeURIComponent('Failed to create profile. Please try again.')}`)
         }
+      } else {
+        // User already exists, just log them in
+        return NextResponse.redirect(`${origin}/auth?error=${encodeURIComponent('Account already exists. Please log in instead.')}`)
       }
 
       return NextResponse.redirect(`${origin}${next}`)

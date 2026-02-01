@@ -6,7 +6,10 @@ import { createClient } from '@/lib/supabase/client'
 import { Flame, Users, Trophy } from 'lucide-react'
 import { TeamName } from '@/lib/constants'
 
+type AuthMode = 'login' | 'signup'
+
 export default function AuthClient() {
+  const [mode, setMode] = useState<AuthMode>('login')
   const [selectedTeam, setSelectedTeam] = useState<TeamName | null>(null)
   const [username, setUsername] = useState('')
   const [loading, setLoading] = useState(false)
@@ -41,23 +44,29 @@ export default function AuthClient() {
   const handleGoogleSignIn = async () => {
     setError(null)
     
-    if (!selectedTeam) {
-      setError('Please select a team first')
-      return
-    }
+    if (mode === 'signup') {
+      if (!selectedTeam) {
+        setError('Please select a team first')
+        return
+      }
 
-    if (!username.trim()) {
-      setError('Please enter a username')
-      return
+      if (!username.trim()) {
+        setError('Please enter a username')
+        return
+      }
     }
 
     setLoading(true)
 
     try {
+      const redirectUrl = mode === 'signup' 
+        ? `${window.location.origin}/auth/callback?team=${selectedTeam}&username=${encodeURIComponent(username.trim())}&mode=signup`
+        : `${window.location.origin}/auth/callback?mode=login`
+
       const { error: oauthError } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback?team=${selectedTeam}&username=${encodeURIComponent(username.trim())}`,
+          redirectTo: redirectUrl,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
@@ -100,9 +109,29 @@ export default function AuthClient() {
 
         {/* Auth Card */}
         <div className="card">
-          <h2 className="text-xl font-semibold text-white mb-6 text-center">
-            Join the Challenge
-          </h2>
+          {/* Tab Switcher */}
+          <div className="flex rounded-lg bg-dark-900 p-1 mb-6">
+            <button
+              onClick={() => { setMode('login'); setError(null); }}
+              className={`flex-1 py-2.5 px-4 rounded-md text-sm font-medium transition-all ${
+                mode === 'login'
+                  ? 'bg-dark-700 text-white'
+                  : 'text-dark-400 hover:text-white'
+              }`}
+            >
+              Log In
+            </button>
+            <button
+              onClick={() => { setMode('signup'); setError(null); }}
+              className={`flex-1 py-2.5 px-4 rounded-md text-sm font-medium transition-all ${
+                mode === 'signup'
+                  ? 'bg-dark-700 text-white'
+                  : 'text-dark-400 hover:text-white'
+              }`}
+            >
+              Sign Up
+            </button>
+          </div>
 
           {/* Error Message */}
           {error && (
@@ -112,83 +141,88 @@ export default function AuthClient() {
           )}
 
           <div className="space-y-5">
-            {/* Username */}
-            <div>
-              <label className="block text-sm font-medium text-dark-300 mb-2">
-                Choose Your Username
-              </label>
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="input-field"
-                placeholder="Enter your username"
-              />
-            </div>
+            {/* Signup fields */}
+            {mode === 'signup' && (
+              <>
+                {/* Username */}
+                <div>
+                  <label className="block text-sm font-medium text-dark-300 mb-2">
+                    Choose Your Username
+                  </label>
+                  <input
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="input-field"
+                    placeholder="Enter your username"
+                  />
+                </div>
 
-            {/* Team Selection */}
-            <div>
-              <label className="block text-sm font-medium text-dark-300 mb-3">
-                Choose Your Team
-              </label>
-              <div className="grid grid-cols-2 gap-3">
-                {/* Team Alpha */}
-                <button
-                  type="button"
-                  onClick={() => setSelectedTeam('Alpha')}
-                  className={`relative p-4 rounded-xl border-2 transition-all ${
-                    selectedTeam === 'Alpha'
-                      ? 'border-alpha-red-500 bg-alpha-red-500/10'
-                      : 'border-dark-600 hover:border-dark-500 bg-dark-800'
-                  }`}
-                >
-                  <div className="flex flex-col items-center gap-2">
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                      selectedTeam === 'Alpha' ? 'bg-alpha-red-600' : 'bg-alpha-red-600/50'
-                    }`}>
-                      <Users className="w-6 h-6 text-white" />
-                    </div>
-                    <span className={`font-semibold ${
-                      selectedTeam === 'Alpha' ? 'text-alpha-red-400' : 'text-white'
-                    }`}>
-                      Team Alpha
-                    </span>
-                    <span className="text-xs text-dark-400">Red Warriors</span>
-                  </div>
-                  {selectedTeam === 'Alpha' && (
-                    <div className="absolute top-2 right-2 w-3 h-3 bg-alpha-red-500 rounded-full" />
-                  )}
-                </button>
+                {/* Team Selection */}
+                <div>
+                  <label className="block text-sm font-medium text-dark-300 mb-3">
+                    Choose Your Team
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {/* Team Alpha */}
+                    <button
+                      type="button"
+                      onClick={() => setSelectedTeam('Alpha')}
+                      className={`relative p-4 rounded-xl border-2 transition-all ${
+                        selectedTeam === 'Alpha'
+                          ? 'border-alpha-red-500 bg-alpha-red-500/10'
+                          : 'border-dark-600 hover:border-dark-500 bg-dark-800'
+                      }`}
+                    >
+                      <div className="flex flex-col items-center gap-2">
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                          selectedTeam === 'Alpha' ? 'bg-alpha-red-600' : 'bg-alpha-red-600/50'
+                        }`}>
+                          <Users className="w-6 h-6 text-white" />
+                        </div>
+                        <span className={`font-semibold ${
+                          selectedTeam === 'Alpha' ? 'text-alpha-red-400' : 'text-white'
+                        }`}>
+                          Team Alpha
+                        </span>
+                        <span className="text-xs text-dark-400">Red Warriors</span>
+                      </div>
+                      {selectedTeam === 'Alpha' && (
+                        <div className="absolute top-2 right-2 w-3 h-3 bg-alpha-red-500 rounded-full" />
+                      )}
+                    </button>
 
-                {/* Team Beta */}
-                <button
-                  type="button"
-                  onClick={() => setSelectedTeam('Beta')}
-                  className={`relative p-4 rounded-xl border-2 transition-all ${
-                    selectedTeam === 'Beta'
-                      ? 'border-beta-gold-500 bg-beta-gold-500/10'
-                      : 'border-dark-600 hover:border-dark-500 bg-dark-800'
-                  }`}
-                >
-                  <div className="flex flex-col items-center gap-2">
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                      selectedTeam === 'Beta' ? 'bg-beta-gold-500' : 'bg-beta-gold-500/50'
-                    }`}>
-                      <Trophy className="w-6 h-6 text-dark-900" />
-                    </div>
-                    <span className={`font-semibold ${
-                      selectedTeam === 'Beta' ? 'text-beta-gold-400' : 'text-white'
-                    }`}>
-                      Team Beta
-                    </span>
-                    <span className="text-xs text-dark-400">Gold Legends</span>
+                    {/* Team Beta */}
+                    <button
+                      type="button"
+                      onClick={() => setSelectedTeam('Beta')}
+                      className={`relative p-4 rounded-xl border-2 transition-all ${
+                        selectedTeam === 'Beta'
+                          ? 'border-beta-gold-500 bg-beta-gold-500/10'
+                          : 'border-dark-600 hover:border-dark-500 bg-dark-800'
+                      }`}
+                    >
+                      <div className="flex flex-col items-center gap-2">
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                          selectedTeam === 'Beta' ? 'bg-beta-gold-500' : 'bg-beta-gold-500/50'
+                        }`}>
+                          <Trophy className="w-6 h-6 text-dark-900" />
+                        </div>
+                        <span className={`font-semibold ${
+                          selectedTeam === 'Beta' ? 'text-beta-gold-400' : 'text-white'
+                        }`}>
+                          Team Beta
+                        </span>
+                        <span className="text-xs text-dark-400">Gold Legends</span>
+                      </div>
+                      {selectedTeam === 'Beta' && (
+                        <div className="absolute top-2 right-2 w-3 h-3 bg-beta-gold-500 rounded-full" />
+                      )}
+                    </button>
                   </div>
-                  {selectedTeam === 'Beta' && (
-                    <div className="absolute top-2 right-2 w-3 h-3 bg-beta-gold-500 rounded-full" />
-                  )}
-                </button>
-              </div>
-            </div>
+                </div>
+              </>
+            )}
 
             {/* Google Sign In Button */}
             <button
@@ -234,13 +268,15 @@ export default function AuthClient() {
                       d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                     />
                   </svg>
-                  Continue with Google
+                  {mode === 'login' ? 'Log in with Google' : 'Sign up with Google'}
                 </>
               )}
             </button>
 
             <p className="text-xs text-dark-500 text-center">
-              Sign in or sign up instantly with your Google account
+              {mode === 'login' 
+                ? 'Welcome back! Sign in with your Google account.'
+                : 'Create your account with Google to join the challenge.'}
             </p>
           </div>
         </div>
