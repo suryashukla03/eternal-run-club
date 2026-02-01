@@ -1,0 +1,128 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-dark-950 text-white antialiased;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center px-6 py-3 
+           font-semibold text-white rounded-lg
+           bg-gradient-to-r from-alpha-red-600 to-alpha-red-700
+           hover:from-alpha-red-500 hover:to-alpha-red-600
+           focus:outline-none focus:ring-2 focus:ring-alpha-red-500 focus:ring-offset-2 focus:ring-offset-dark-900
+           transition-all duration-200 transform hover:scale-[1.02]
+           disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center px-6 py-3 
+           font-semibold text-white rounded-lg
+           bg-dark-700 border border-dark-600
+           hover:bg-dark-600 hover:border-dark-500
+           focus:outline-none focus:ring-2 focus:ring-dark-500 focus:ring-offset-2 focus:ring-offset-dark-900
+           transition-all duration-200
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-team-alpha {
+    @apply inline-flex items-center justify-center px-6 py-3 
+           font-semibold text-white rounded-lg
+           bg-gradient-to-r from-alpha-red-600 to-alpha-red-700
+           hover:from-alpha-red-500 hover:to-alpha-red-600
+           focus:outline-none focus:ring-2 focus:ring-alpha-red-500 focus:ring-offset-2 focus:ring-offset-dark-900
+           transition-all duration-200;
+  }
+
+  .btn-team-beta {
+    @apply inline-flex items-center justify-center px-6 py-3 
+           font-semibold text-dark-900 rounded-lg
+           bg-gradient-to-r from-beta-gold-400 to-beta-gold-500
+           hover:from-beta-gold-300 hover:to-beta-gold-400
+           focus:outline-none focus:ring-2 focus:ring-beta-gold-500 focus:ring-offset-2 focus:ring-offset-dark-900
+           transition-all duration-200;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-3 
+           bg-dark-800 border border-dark-600 rounded-lg
+           text-white placeholder-dark-400
+           focus:outline-none focus:border-alpha-red-500 focus:ring-1 focus:ring-alpha-red-500
+           transition-colors duration-200;
+  }
+
+  .card {
+    @apply bg-dark-800/50 backdrop-blur-sm border border-dark-700 rounded-2xl p-6;
+  }
+
+  .team-badge-alpha {
+    @apply inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold
+           bg-alpha-red-600/20 text-alpha-red-400 border border-alpha-red-600/30;
+  }
+
+  .team-badge-beta {
+    @apply inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold
+           bg-beta-gold-500/20 text-beta-gold-400 border border-beta-gold-500/30;
+  }
+}
+
+@layer utilities {
+  .text-gradient-alpha {
+    @apply bg-gradient-to-r from-alpha-red-400 to-alpha-red-600 bg-clip-text text-transparent;
+  }
+
+  .text-gradient-beta {
+    @apply bg-gradient-to-r from-beta-gold-300 to-beta-gold-500 bg-clip-text text-transparent;
+  }
+
+  .glow-alpha {
+    box-shadow: 0 0 40px rgba(220, 38, 38, 0.3);
+  }
+
+  .glow-beta {
+    box-shadow: 0 0 40px rgba(234, 179, 8, 0.3);
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-dark-900;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-dark-600 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-dark-500;
+}
+
+/* Loading animation */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.05) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
