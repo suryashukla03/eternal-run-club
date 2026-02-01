@@ -1,9 +1,10 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import { User, TeamScore, LeaderboardEntry } from '@/lib/types'
-import { Trophy, Users, Medal, TrendingUp, Route, Activity } from 'lucide-react'
+import { Trophy, Users, Medal, TrendingUp, Route, Activity, ChevronRight } from 'lucide-react'
 
 interface LeaderboardClientProps {
   user: User
@@ -205,14 +206,15 @@ export default function LeaderboardClient({
                     const isAlpha = entry.team === 'Alpha'
 
                     return (
-                      <div
+                      <Link
+                        href={`/profile/${entry.user_id}`}
                         key={entry.user_id}
-                        className={`p-4 transition-colors ${
+                        className={`block p-4 transition-colors ${
                           isCurrentUser 
                             ? isAlpha 
-                              ? 'bg-alpha-red-600/5' 
-                              : 'bg-beta-gold-500/5'
-                            : 'hover:bg-dark-800/30'
+                              ? 'bg-alpha-red-600/5 hover:bg-alpha-red-600/10' 
+                              : 'bg-beta-gold-500/5 hover:bg-beta-gold-500/10'
+                            : 'hover:bg-dark-800/50'
                         }`}
                       >
                         {/* Mobile Layout */}
@@ -243,11 +245,14 @@ export default function LeaderboardClient({
                               </div>
                             </div>
                             
-                            {/* Points */}
-                            <div className={`text-xl font-bold ${
-                              isAlpha ? 'text-alpha-red-400' : 'text-beta-gold-400'
-                            }`}>
-                              {entry.total_points}
+                            {/* Points & Arrow */}
+                            <div className="flex items-center gap-2">
+                              <div className={`text-xl font-bold ${
+                                isAlpha ? 'text-alpha-red-400' : 'text-beta-gold-400'
+                              }`}>
+                                {entry.total_points}
+                              </div>
+                              <ChevronRight className="w-4 h-4 text-dark-500" />
                             </div>
                           </div>
                           
@@ -279,11 +284,12 @@ export default function LeaderboardClient({
                           </div>
 
                           {/* Name */}
-                          <div className="col-span-4">
+                          <div className="col-span-4 flex items-center gap-2">
                             <span className={`font-medium ${isCurrentUser ? 'text-white' : 'text-dark-200'}`}>
                               {entry.username}
                             </span>
-                            {isCurrentUser && <span className="text-xs text-dark-400 ml-2">(You)</span>}
+                            {isCurrentUser && <span className="text-xs text-dark-400">(You)</span>}
+                            <ChevronRight className="w-4 h-4 text-dark-500 ml-auto" />
                           </div>
 
                           {/* Team Badge */}
@@ -310,7 +316,7 @@ export default function LeaderboardClient({
                             {entry.total_distance.toFixed(1)} km
                           </div>
                         </div>
-                      </div>
+                      </Link>
                     )
                   })
                 )}
