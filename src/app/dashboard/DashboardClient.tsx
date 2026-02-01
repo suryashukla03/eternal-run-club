@@ -75,6 +75,8 @@ export default function DashboardClient({
         isOpen={showLogRunModal}
         onClose={() => setShowLogRunModal(false)}
         userId={user.id}
+        username={user.username}
+        teamName={user.team_name}
       />
     </div>
   )
