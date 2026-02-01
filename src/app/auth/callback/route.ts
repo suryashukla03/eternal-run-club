@@ -4,6 +4,8 @@ import { NextResponse } from 'next/server'
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
+  const team = searchParams.get('team') || 'Alpha'
+  const username = searchParams.get('username')
   const next = searchParams.get('next') ?? '/dashboard'
 
   if (code) {
@@ -20,22 +22,27 @@ export async function GET(request: Request) {
         .eq('id', user.id)
         .single()
 
-      // If no profile exists, create one from user metadata
+      // If no profile exists, create one
       if (!existingProfile) {
-        const metadata = user.user_metadata
+        // For Google OAuth, use username from URL params or derive from email/name
+        const finalUsername = username || 
+          user.user_metadata?.full_name?.replace(/\s+/g, '_').toLowerCase() ||
+          user.email?.split('@')[0] || 
+          'runner'
+        
         const { error: profileError } = await supabase
           .from('users')
           .insert({
             id: user.id,
             email: user.email,
-            username: metadata?.username || user.email?.split('@')[0] || 'runner',
-            team_name: metadata?.team_name || 'Alpha',
+            username: finalUsername,
+            team_name: team as 'Alpha' | 'Beta',
           })
 
         if (profileError) {
           console.error('Error creating user profile:', profileError)
           // Redirect to auth with error
-          return NextResponse.redirect(`${origin}/auth?error=profile_creation_failed`)
+          return NextResponse.redirect(`${origin}/auth?error=${encodeURIComponent('Failed to create profile. Please try again.')}`)
         }
       }
 
@@ -44,5 +51,5 @@ export async function GET(request: Request) {
   }
 
   // Return the user to an error page with instructions
-  return NextResponse.redirect(`${origin}/auth?error=auth_callback_error`)
+  return NextResponse.redirect(`${origin}/auth?error=${encodeURIComponent('Authentication failed. Please try again.')}`)
 }
